@@ -1,8 +1,19 @@
-from faster_whisper import WhisperModel
-
-model = WhisperModel("tiny", device='cpu', compute_type="int8")
+import speech_recognition as sr
 
 def transcribe(audio_path: str) -> str:
-    segments, _ = model.transcribe(audio_path, language="pt", beam_size=1)
-    text = "".join([segment.text for segment in segments])
-    return text.strip()
+    """Lê o arquivo de áudio WAV e envia para a API rápida do Google."""
+    r = sr.Recognizer()
+    try:
+        with sr.AudioFile(audio_path) as source:
+            audio = r.record(source)
+            # A API pública do Google é absurdamente rápida e muito mais leve que o Whisper local
+            text = r.recognize_google(audio, language="pt-BR")
+            return text
+    except sr.UnknownValueError:
+        # Quando o Google ouve apenas ruído/silêncio e não entende nada
+        return ""
+    except sr.RequestError:
+        # Sem internet ou erro nos servidores do Google
+        return "Desculpe, estou sem conexão com a internet."
+    except Exception:
+        return ""
