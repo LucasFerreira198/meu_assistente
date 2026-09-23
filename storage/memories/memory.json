@@ -1,0 +1,18 @@
+{
+    "profiles": {
+        "Lucas": [
+            "Prefere ser chamado de Senhor",
+            "O usuário comentou que a primeira inicialização de aplicativos/ações pode demorar, mas que o sistema deve se lembrar e otimizar para ser mais rápido nas próximas vezes."
+        ]
+    },
+    "system": {
+        "app_path_spotify": {
+            "type": "flatpak",
+            "command": "com.spotify.Client"
+        },
+        "app_path_code": {
+            "type": "native",
+            "command": "code"
+        }
+    }
+}

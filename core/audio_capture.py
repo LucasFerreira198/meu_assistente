@@ -16,12 +16,11 @@ except OSError:
 
 # Inicializa o reconhecedor e o microfone apenas uma vez para evitar spam de logs do ALSA/PyAudio no Linux
 recognizer = sr.Recognizer()
-# Desabilita o ajuste dinâmico para que ele não fique "sensível demais" quando a sala estiver quieta (evita pegar o teclado)
+# Habilita ajuste com piso fixo acima do ruído da sala (ruído medido em ~100-149, voz humana em 400-1500)
 recognizer.dynamic_energy_threshold = False
-# Aumenta a força necessária para ativar (Padrão era 300~400. 1500 exige que você fale claro)
-recognizer.energy_threshold = 1500
-# Tempo máximo de silêncio antes dele entender que você terminou a frase. Aumentado para 1.2 segundos para não cortar sua fala.
-recognizer.pause_threshold = 1.2
+recognizer.energy_threshold = 380
+# Pausa de 0.8s de silêncio para encerrar a frase com agilidade
+recognizer.pause_threshold = 0.8
 
 # Redireciona stderr temporariamente para esconder erros adicionais do JACK/PyAudio durante a criação
 devnull = os.open(os.devnull, os.O_WRONLY)
@@ -39,14 +38,17 @@ old_stderr_init = os.dup(2)
 os.dup2(devnull_init, 2)
 try:
     with microphone as source:
-        # print("🎤 Ajustando para o ruído ambiente inicial...")
-        recognizer.adjust_for_ambient_noise(source, duration=1)
+        recognizer.adjust_for_ambient_noise(source, duration=0.6)
+        if recognizer.energy_threshold < 350:
+            recognizer.energy_threshold = 350
 finally:
     os.dup2(old_stderr_init, 2)
     os.close(devnull_init)
     os.close(old_stderr_init)
 
-def record_audio(filename="temp.wav", timeout=None, phrase_time_limit=10) -> str:
+DEFAULT_AUDIO_PATH = os.path.join("storage", "audio", "temp.wav")
+
+def record_audio(filename=DEFAULT_AUDIO_PATH, timeout=5, phrase_time_limit=10) -> str:
     """Escuta o microfone aguardando fala, e salva em um arquivo WAV."""
     devnull = os.open(os.devnull, os.O_WRONLY)
     old_stderr = os.dup(2)
@@ -64,6 +66,7 @@ def record_audio(filename="temp.wav", timeout=None, phrase_time_limit=10) -> str
                 # Retorna silenciosamente e lida no main
                 return None
                 
+            os.makedirs(os.path.dirname(filename), exist_ok=True)
             with open(filename, "wb") as f:
                 f.write(audio_data.get_wav_data())
                 

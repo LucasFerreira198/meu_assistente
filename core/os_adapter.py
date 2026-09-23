@@ -39,16 +39,45 @@ class SystemAdapter:
             elif self.os == "darwin":
                 subprocess.Popen(["open", "-a", safe_app_name], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             elif self.os == "linux":
+                # Tenta buscar atalho no Sistema de Memória antes de tudo
+                from tools.memory_tools import get_system_knowledge, save_system_knowledge
+                cache_key = f"app_path_{safe_app_name}"
+                cached_method = get_system_knowledge(cache_key)
+                
+                if cached_method:
+                    method_type = cached_method.get("type")
+                    cmd = cached_method.get("command")
+                    
+                    if method_type == "native":
+                        process = subprocess.Popen([cmd], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+                        self.tracked_apps[safe_app_name] = {"pid": process.pid, "type": "native", "time": time.time()}
+                        self._save_state()
+                        return f"Aplicativo '{safe_app_name}' aberto rapidamente (via memória do sistema: native)."
+                    
+                    elif method_type == "gtk-launch":
+                        os.system(f"gtk-launch {cmd} > /dev/null 2>&1")
+                        self.tracked_apps[safe_app_name] = {"pid": None, "type": "gtk-launch", "time": time.time()}
+                        self._save_state()
+                        return f"Aplicativo '{safe_app_name}' aberto rapidamente (via memória do sistema: atalho)."
+                    
+                    elif method_type == "flatpak":
+                        process = subprocess.Popen(["flatpak", "run", cmd], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+                        self.tracked_apps[safe_app_name] = {"pid": process.pid, "type": "flatpak", "time": time.time()}
+                        self._save_state()
+                        return f"Aplicativo '{safe_app_name}' aberto rapidamente (via memória do sistema: flatpak)."
+
                 if shutil.which(safe_app_name):
                     process = subprocess.Popen([safe_app_name], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
                     self.tracked_apps[safe_app_name] = {"pid": process.pid, "type": "native", "time": time.time()}
                     self._save_state()
+                    save_system_knowledge(cache_key, {"type": "native", "command": safe_app_name})
                     return f"Aplicativo '{safe_app_name}' aberto (via terminal)."
 
                 exit_code = os.system(f"gtk-launch {safe_app_name} > /dev/null 2>&1")
                 if exit_code == 0:
                     self.tracked_apps[safe_app_name] = {"pid": None, "type": "gtk-launch", "time": time.time()}
                     self._save_state()
+                    save_system_knowledge(cache_key, {"type": "gtk-launch", "command": safe_app_name})
                     return f"Aplicativo '{safe_app_name}' aberto (via atalho da interface)."
                 
                 if shutil.which("flatpak"):
@@ -58,6 +87,7 @@ class SystemAdapter:
                         process = subprocess.Popen(["flatpak", "run", app_id], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
                         self.tracked_apps[safe_app_name] = {"pid": process.pid, "type": "flatpak", "time": time.time()}
                         self._save_state()
+                        save_system_knowledge(cache_key, {"type": "flatpak", "command": app_id})
                         return f"Aplicativo '{safe_app_name}' aberto via Flatpak."
                 return f"Erro: O aplicativo '{safe_app_name}' não foi encontrado no sistema."
             return f"sucesso: Aplicativo '{safe_app_name}' aberto no sistema {self.os}."

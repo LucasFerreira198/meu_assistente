@@ -1,1 +1,1 @@
-{"spotify": {"pid": 1205887, "type": "flatpak", "time": 1790043540.8779783}, "chrome": {"pid": 1237985, "type": "flatpak", "time": 1790043820.272146}}
+{"chrome": {"pid": 1237985, "type": "flatpak", "time": 1790043820.272146}, "code": {"pid": 515805, "type": "native", "time": 1790125709.3984752}}

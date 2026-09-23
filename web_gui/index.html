@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A.R.E.S. // J.A.R.V.I.S. HUD</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="hud-overlay"></div>
+    <div class="container">
+        
+        <!-- ================= TOP HEADER ================= -->
+        <header class="hud-header">
+            <div class="header-left">
+                <div class="diamond-icon">◆</div>
+                <div class="header-title-group">
+                    <h1 class="brand-title">A.R.E.S.</h1>
+                    <span class="brand-subtitle">JUST A RATHER VERY INTELLIGENT SYSTEM</span>
+                </div>
+            </div>
+
+            <div class="header-center">
+                <div class="status-block">
+                    <span class="dim-label">SYSTEM STATUS</span>
+                    <span id="systemStatus" class="status-value status-optimal">
+                        <span class="status-dot"></span> <span id="statusText">OPTIMAL</span>
+                    </span>
+                </div>
+                <div class="status-divider"></div>
+                <div class="status-block">
+                    <span class="dim-label">LOCAL TIME</span>
+                    <span id="localTime" class="time-value">--:--:--</span>
+                </div>
+            </div>
+
+            <div class="header-right">
+                <button id="btnTogglePip" class="icon-btn" title="Mini HUD Flutuante dos Olhos (Picture-in-Picture)">
+                    <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M19 11h-8v6h8v-6zm4 8V4.98C23 3.88 22.1 3 21 3H3c-1.1 0-2 .88-2 1.98V19c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2zm-2 .02H3V4.97h18v14.05z"/></svg>
+                </button>
+                <button id="btnNotifications" class="icon-btn" title="Notificações">
+                    <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+                </button>
+                <button id="btnSettings" class="icon-btn" title="Configurações">
+                    <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+                </button>
+                <div class="user-pill">
+                    <span class="user-name">L. FERREIRA</span>
+                    <div class="user-avatar"></div>
+                </div>
+            </div>
+        </header>
+
+        <!-- ================= MAIN 3-COLUMN GRID ================= -->
+        <main class="hud-main">
+            
+            <!-- ================= LEFT COLUMN ================= -->
+            <section class="hud-col col-left">
+                
+                <!-- CARD 1: VITAL SIGNS -->
+                <div class="hud-card card-bracket">
+                    <div class="card-header">
+                        <span class="card-title">SYSTEM // <span class="cyan-glow">BIOMETRICS</span></span>
+                        <span class="card-meta">VITAL SIGNS</span>
+                    </div>
+                    <div class="biometrics-content">
+                        <div class="bio-left">
+                            <span class="dim-small">Heart Rate</span>
+                            <div class="bpm-display"><span id="bpmValue">72</span> <span class="unit">BPM</span></div>
+                        </div>
+                        <div class="bio-right">
+                            <canvas id="ecgCanvas" width="160" height="45"></canvas>
+                        </div>
+                    </div>
+                    <div class="sound-bars-container">
+                        <canvas id="barsCanvas" width="280" height="40"></canvas>
+                    </div>
+                </div>
+
+                <!-- CARD 2: SYSTEM RESOURCES -->
+                <div class="hud-card card-bracket">
+                    <div class="card-header">
+                        <span class="card-title">SYSTEM // <span class="cyan-glow">RESOURCES</span></span>
+                        <span class="card-meta">RT-MONITOR</span>
+                    </div>
+                    <div class="resource-row">
+                        <div class="res-info">
+                            <span>⚙️ CPU Load</span>
+                            <span id="cpuText">24%</span>
+                        </div>
+                        <div class="progress-track">
+                            <div id="cpuBar" class="progress-fill" style="width: 24%;"></div>
+                        </div>
+                    </div>
+                    <div class="resource-row">
+                        <div class="res-info">
+                            <span>💾 Memory (RAM)</span>
+                            <span id="ramText">12.4 GB</span>
+                        </div>
+                        <div class="progress-track">
+                            <div id="ramBar" class="progress-fill" style="width: 45%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CARD 3: ACTIVE APPS / PROCESS MANAGER (UP-LINK) -->
+                <div class="hud-card card-bracket card-apps-manager">
+                    <div class="card-header">
+                        <span class="card-title">SYSTEM // <span class="cyan-glow">UP-LINK APPS</span></span>
+                        <span id="activeAppsCount" class="card-meta">0 APPS</span>
+                    </div>
+                    <div class="apps-sub-header">
+                        <span class="dim-small">PROCESSO / APLICATIVO</span>
+                        <span class="dim-small">PID & AÇÃO</span>
+                    </div>
+                    <div id="activeAppsList" class="apps-scroll-box">
+                        <div class="empty-apps-msg">Escaneando aplicativos ativos...</div>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- ================= CENTER COLUMN (RADAR & ROBOT EYES) ================= -->
+            <section class="hud-col col-center">
+                <div class="radar-container">
+                    
+                    <!-- SVG Concéntrico do HUD Circular -->
+                    <svg class="radar-svg" viewBox="0 0 450 450">
+                        <!-- Anéis de grade concêntricos -->
+                        <circle cx="225" cy="225" r="200" class="radar-ring ring-outer-dashed" />
+                        <circle cx="225" cy="225" r="150" class="radar-ring ring-solid" />
+                        <circle cx="225" cy="225" r="100" class="radar-ring ring-solid" />
+                        <circle cx="225" cy="225" r="50"  class="radar-ring ring-core-border" />
+                        
+                        <!-- Linhas Radiais de Mira -->
+                        <line x1="25" y1="225" x2="425" y2="225" class="radar-axis" />
+                        <line x1="225" y1="25" x2="225" y2="425" class="radar-axis" />
+                        <line x1="84" y1="84" x2="366" y2="366" class="radar-axis dim-axis" />
+                        <line x1="84" y1="366" x2="366" y2="84" class="radar-axis dim-axis" />
+                        
+                        <!-- Feixe e Marcadores Rotativos de Radar -->
+                        <g class="radar-sweep-group">
+                            <path d="M 225 225 L 225 25 A 200 200 0 0 1 366 84 Z" class="radar-sweep-beam" />
+                            <rect x="222" y="35" width="6" height="18" rx="2" class="radar-blip blip-1" />
+                            <rect x="222" y="395" width="6" height="18" rx="2" class="radar-blip blip-2" />
+                        </g>
+                    </svg>
+
+                    <!-- Núcleo Central: OLHOS DO ROBÔ (OLED Canvas) -->
+                    <div class="robot-eyes-core">
+                        <canvas id="robotEyesCanvas" width="160" height="110"></canvas>
+                        <div class="core-label">CORE ACTIVE</div>
+                    </div>
+
+                    <!-- Espectro de Áudio no fundo do Radar -->
+                    <div class="center-audio-wave">
+                        <canvas id="audioWaveCanvas" width="180" height="30"></canvas>
+                    </div>
+
+                    <!-- Cápsula de Status de Áudio -->
+                    <div id="micPill" class="awaiting-pill">
+                        <span class="mic-icon">🎙</span>
+                        <span id="micPillText">AWAITING COMMAND...</span>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- ================= RIGHT COLUMN ================= -->
+            <section class="hud-col col-right">
+                
+                <!-- CARD 1: ARMOR / STATUS DE DEFESA & BOTÕES -->
+                <div class="hud-card card-bracket">
+                    <div class="card-header">
+                        <span class="card-title">SYSTEM // <span class="cyan-glow">STATUS</span></span>
+                        <span class="card-meta">MARK LXXXV</span>
+                    </div>
+                    <div class="armor-stats">
+                        <div class="stat-dual">
+                            <div class="stat-sub">
+                                <span class="dim-small">POWER CORE</span>
+                                <span class="val-stat">98%</span>
+                                <div class="progress-track"><div class="progress-fill" style="width: 98%;"></div></div>
+                            </div>
+                            <div class="stat-sub">
+                                <span class="dim-small">INTEGRITY</span>
+                                <span class="val-stat">100%</span>
+                                <div class="progress-track"><div class="progress-fill" style="width: 100%;"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="defense-tiles-title">DEFENSE & QUICK ACTIONS</div>
+                    <div class="tiles-grid">
+                        <button id="btnShield" class="tile-btn" title="Modo Silêncio / Mudo">🛡</button>
+                        <button id="btnBoost" class="tile-btn active" title="System Boost (Otimizar)">⚡</button>
+                        <button id="btnScreenSnap" class="tile-btn" title="Capturar e Analisar Tela">📸</button>
+                        <button id="btnInterrupt" class="tile-btn btn-danger" title="Interromper Fala">🛑</button>
+                        <button id="btnClearTerm" class="tile-btn" title="Limpar Console">🧹</button>
+                    </div>
+                </div>
+
+                <!-- CARD 2: TERMINAL & CONVERSA (EXPANDIDO - PRINCIPAL) -->
+                <div class="hud-card card-bracket card-terminal-expanded">
+                    <div class="card-header">
+                        <span class="card-title">SYSTEM // <span class="cyan-glow">TERMINAL & CONSOLE</span></span>
+                        <span class="card-meta">ROOT@ARES</span>
+                    </div>
+                    <div id="terminalDisplay" class="terminal-log-box">
+                        <div class="term-line prompt-line">&gt;_ ares --core-system --status</div>
+                        <div class="term-line success-line">All systems operational. Neural bridge connected.</div>
+                    </div>
+                    <!-- Barra de preview de imagem anexada -->
+                    <div id="attachedImgPreview" class="img-preview-bar" style="display: none;">
+                        <img id="imgThumbnail" src="" alt="preview">
+                        <span id="imgPreviewName">imagem.png</span>
+                        <button id="btnRemoveImg" class="btn-remove-img" title="Remover imagem">&times;</button>
+                    </div>
+                    <div class="term-input-row">
+                        <input type="file" id="imageFileInput" accept="image/*" style="display: none;">
+                        <button id="btnAttachImg" class="term-icon-btn" title="Anexar Imagem (ou cole com Ctrl+V)">📷</button>
+                        <span class="term-prompt">&gt;_</span>
+                        <input type="text" id="cmdInput" placeholder="Instrução ou comando (ou cole imagem com Ctrl+V)..." autocomplete="off">
+                        <button id="btnSendCmd" class="term-send-btn">EXEC</button>
+                    </div>
+                </div>
+
+                <!-- CARD 3: RT-LOG / SUB-AGENTES (COMPACTO) -->
+                <div class="hud-card card-bracket card-logs-compact">
+                    <div class="card-header">
+                        <span class="card-title">SYSTEM // <span class="cyan-glow">SUB-AGENTS</span></span>
+                        <span id="agentsCountBadge" class="card-meta">0 RUNNING</span>
+                    </div>
+                    <div id="subAgentsList" class="agents-scroll-box">
+                        <div class="empty-agents-msg">Nenhum sub-agente em segundo plano no momento.</div>
+                    </div>
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+    <!-- Elemento oculto de vídeo para streaming dos Olhos em Picture-in-Picture -->
+    <video id="pipVideo" autoplay muted playsinline style="position: fixed; top: -9999px; left: -9999px; width: 1px; height: 1px; opacity: 0; pointer-events: none;"></video>
+
+    <!-- Mini Pop-up Flutuante de Olhos (Fallback no canto da tela) -->
+    <div id="floatingMiniEyes" class="floating-mini-eyes" style="display: none;" title="Clique para focar no ARES">
+        <canvas id="miniEyesCanvas" width="120" height="70"></canvas>
+        <div id="miniEyesStatus" class="mini-status-text">LISTENING</div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
+
